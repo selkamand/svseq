@@ -87,7 +87,6 @@ fusion_string_to_coords <- function(fusion, inversion=FALSE, txdb = TxDb.Hsapien
   cli::cli_alert("Downstream Gene SV: {chrom2}:{pos2}")
 
 
-  browser()
   # Fetch Start Coordinates
   gene1_coords <- lookup_gene_start_and_end(gene1, txdb=txdb, db=db)
   gene2_coords <- lookup_gene_start_and_end(gene2, txdb=txdb, db=db)

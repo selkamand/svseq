@@ -54,6 +54,7 @@ Note coordinates must all be base-1
 
 
 ```{r}
+library(svseq)
 
 # Get Fusion Sequence
 fusion_sequence <- svseq(
