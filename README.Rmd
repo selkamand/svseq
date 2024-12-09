@@ -1,0 +1,95 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# svseq
+
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN status](https://www.r-pkg.org/badges/version/svseq)](https://CRAN.R-project.org/package=svseq)
+<!-- badges: end -->
+
+The goal of svseq is to simplify extraction of derivative genomic sequences in samples with SVs.
+
+For example, if you have a BCR::ABL1 fusion from chr22:23632645|chr9:133729466, you may want to extract the genomic DNA sequence that the fusion creates, from the start position of the BCR to end position of ABL1. The svseq package gets you this sequence
+
+
+
+## Installation
+
+``` r
+if (!require("remotes"))
+    install.packages("remotes")
+
+remotes::install_github("selkamand/svseq")
+```
+
+## Quick Start
+
+We start by writing our fusion in this form:
+
+```
+BCR::chr22:23632645|chr9:133729466::ABL1
+```
+
+The generalised version is:
+
+```
+upstreamGene:upstreamChrom:upstreamPos|downstreamChrom:downstreamPos::downstreamGene
+```
+
+Note coordinates must all be base-1 
+
+
+
+```{r}
+
+# Get Fusion Sequence
+fusion_sequence <- svseq(
+  fusion = "BCR::chr22:23632645|chr9:133729466::ABL1", 
+  inversion = FALSE,  # Is the first gene inverted in its new position?
+  ref = "hg38", 
+  return = "sequence"
+)
+
+
+# Export as FASTA
+export_fasta(fusion_sequence, "BCR_ABL1.fasta", fasta_name = "BCR_ABL1")
+
+# Export as bed
+coords <- svseq(
+  fusion = "BCR::chr22:23632645|chr9:133729466::ABL1", 
+  ref = "hg38", 
+  inversion = FALSE, 
+  return = "coords"
+)
+
+export_bed(coords, "BCR_ABL1.bed")
+```
+
+
+## The algorithm
+
+To get a fusion DNA sequence from the fusion string `BCR::chr22:23632645|chr9:133729466::ABL1` we do the following
+
+1. Use REGEX to extract the gene names and coordinates.
+
+2. Lookup the gene starts & ends of the two genes (using TxDb.Hsapiens.UCSC.hg38.knownGene by default)
+
+3. Modify the start and ends to produce a BED that represents the final fusion sequence. This is the most complex part and must take into account gene strandedness.
+
+For example, if the upstream gene is in the forward strand, the genomic gene start-position should be replaced by the breakpoint upstreamPos. Conversely if the upstream gene is in the reverse strand, then the end-position should be replaced by the breapoint upstreamPos.
+
+Note that SVs can cause inversions as indicated by strandedness of the SVs breakpoint (+ - or - +). 
+In these cases, the strand of the upstream gene should be flipped (which can be indicated using the 'inversion' argument)
