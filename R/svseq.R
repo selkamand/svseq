@@ -48,14 +48,39 @@ svseq <- function(fusion, inversion=FALSE, ref = "hg38", return = c("sequence", 
   return(singleseq)
 }
 
+#' Export Genomic Coordinates as BED File
+#'
+#' This function exports a set of genomic coordinates to a BED file, suitable for downstream analysis or visualization.
+#'
+#' @param coords A `GenomicRanges` object representing genomic coordinates.
+#' @param outfile A string specifying the output file path for the BED file.
+#'
+#' @return Invisible `NULL`. The BED file is written to the specified path.
+#' @export
+#'
+#' @examples
+#' export_bed(coords = example_sv, outfile = "example.bed")
 export_bed <- function(coords, outfile){
-  rlang::check_installed(pkg = "rtracklayer", reason = "export genomic ranges object as bed")
+  rlang::check_installed(pkg = "rtracklayer", reason = "export genomic ranges object as BED")
   rtracklayer::export.bed(coords, con = outfile)
 }
 
+#' Export DNA Sequence as FASTA File
+#'
+#' This function exports a DNA sequence to a FASTA file, enabling further bioinformatics analyses.
+#'
+#' @param sequence A string representing the DNA sequence to export.
+#' @param outfile A string specifying the output file path for the FASTA file.
+#' @param fasta_name An optional string to name the sequence in the FASTA file. Defaults to "fusion_sequence" if not provided.
+#'
+#' @return Invisible `NULL`. The FASTA file is written to the specified path.
+#' @export
+#'
+#' @examples
+#' export_fasta(sequence = "AGCTTGCA", outfile = "sequence.fasta", fasta_name = "example_sequence")
 export_fasta <- function(sequence, outfile, fasta_name = NULL){
-  rlang::check_installed(pkg = "Biostrings", reason = "export genomic ranges object as bed")
-  seqset <-Biostrings::DNAStringSet(sequence)
+  rlang::check_installed(pkg = "Biostrings", reason = "export genomic ranges object as FASTA")
+  seqset <- Biostrings::DNAStringSet(sequence)
   fasta_name <- if(is.null(fasta_name)) "fusion_sequence" else fasta_name
   names(seqset) <- fasta_name
   Biostrings::writeXStringSet(x = seqset, append = FALSE, filepath = outfile, format = "fasta")
